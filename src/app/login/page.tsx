@@ -21,10 +21,15 @@ function LoginContent() {
   const handleGoogleLogin = async () => {
     const supabase = createClient();
     
+    // 環境変数でサイトURLが指定されていればそれを使用、なければ現在のoriginを使用
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+    
+    console.log('[Auth] Initiating OAuth with redirectTo:', `${siteUrl}/auth/callback`);
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${siteUrl}/auth/callback`,
         queryParams: {
           hd: 'evem-japan.com', // Hint to show only evem-japan.com accounts
         },

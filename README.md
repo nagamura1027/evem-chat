@@ -45,22 +45,37 @@ git push -u origin main
 | `NEXT_PUBLIC_SUPABASE_URL` | (Supabase URL) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (Supabase Anon Key) |
 | `SUPABASE_SERVICE_ROLE_KEY` | (Supabase Service Role Key) |
+| `NEXT_PUBLIC_SITE_URL` | `https://<YOUR_NETLIFY_SITE>.netlify.app` ⚠️必須 |
 | `DIFY_BASE_URL` | https://api.dify.ai/v1 |
 | `DIFY_API_KEY` | (Dify API Key) |
 | `ALLOWED_EMAIL_DOMAIN` | evem-japan.com |
 
 5. 「Deploy」をクリック
 
-### Step 3: SupabaseのRedirect URLs更新
+### Step 3: Supabase認証設定を更新（⚠️重要）
 
 デプロイ完了後、Netlify URLを取得（例: `https://evem-chat.netlify.app`）して：
 
+#### 3-1. Supabase URL Configuration
 1. Supabase Dashboard → Authentication → URL Configuration
-2. 「Redirect URLs」に追加：
+2. **Site URL** を本番URLに変更：
    ```
-   https://<YOUR_NETLIFY_SITE>.netlify.app/**
+   https://evem-chat.netlify.app
    ```
-3. 保存
+3. **Redirect URLs** に追加：
+   ```
+   https://evem-chat.netlify.app/**
+   ```
+4. 保存
+
+#### 3-2. Google Cloud Console（OAuth設定）
+1. Google Cloud Console → APIs & Services → Credentials
+2. OAuth 2.0 クライアントIDを選択
+3. 「承認済みのリダイレクトURI」に追加：
+   ```
+   https://evem-chat.netlify.app/auth/callback
+   ```
+4. 保存
 
 **動作確認**: `https://<YOUR_NETLIFY_SITE>.netlify.app/login` にアクセス
 
@@ -79,6 +94,11 @@ git push -u origin main
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+
+# Site URL (ローカルでは省略可、本番では必須)
+# ローカル: http://localhost:3000
+# 本番: https://your-site.netlify.app
+NEXT_PUBLIC_SITE_URL=
 
 # Dify API
 DIFY_BASE_URL=https://api.dify.ai/v1
@@ -230,18 +250,20 @@ Netlifyダッシュボードで以下の環境変数を設定：
 
 | Key | Value |
 |-----|-------|
-| `DIFY_BASE_URL` | https://api.dify.ai/v1 |
-| `DIFY_API_KEY` | (Dify API Key) |
 | `NEXT_PUBLIC_SUPABASE_URL` | (Supabase URL) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (Supabase Anon Key) |
 | `SUPABASE_SERVICE_ROLE_KEY` | (Supabase Service Role Key) |
+| `NEXT_PUBLIC_SITE_URL` | `https://<YOUR_SITE>.netlify.app` ⚠️必須 |
+| `DIFY_BASE_URL` | https://api.dify.ai/v1 |
+| `DIFY_API_KEY` | (Dify API Key) |
 | `ALLOWED_EMAIL_DOMAIN` | evem-japan.com |
 
 ### 4. 本番URLの更新
 
 デプロイ後、Supabaseの設定を更新：
-1. Authentication → URL Configuration → Site URL を本番URLに変更
-2. Redirect URLs に本番の callback URL を追加
+1. Authentication → URL Configuration → **Site URL** を本番URLに変更
+2. **Redirect URLs** に本番URL `https://<YOUR_SITE>.netlify.app/**` を追加
+3. Google Cloud Console でOAuthリダイレクトURIに `https://<YOUR_SITE>.netlify.app/auth/callback` を追加
 
 ---
 
