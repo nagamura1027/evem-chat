@@ -31,7 +31,7 @@ function LoginContent() {
       options: {
         redirectTo: `${siteUrl}/auth/callback`,
         queryParams: {
-          hd: 'evem-japan.com', // Hint to show only evem-japan.com accounts
+          prompt: 'select_account', // 毎回アカウント選択画面を表示
         },
       },
     });
