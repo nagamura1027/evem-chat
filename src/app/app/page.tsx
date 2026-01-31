@@ -128,7 +128,7 @@ export default function AppPage() {
             <div className="h-8 bg-white rounded-lg px-2 flex items-center justify-center">
               <img src="/logo.png" alt="EVeM" className="h-5 w-auto" />
             </div>
-            <span className="font-semibold text-white hidden sm:inline">EVeM Chat</span>
+            <span className="font-semibold text-white hidden sm:inline">EVeM DNA Chat</span>
           </div>
         </div>
         

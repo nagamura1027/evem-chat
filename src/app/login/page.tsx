@@ -68,8 +68,8 @@ function LoginContent() {
               className="h-12 w-auto"
             />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">EVeM Chat</h1>
-          <p className="text-slate-400">社内AIアシスタント</p>
+          <h1 className="text-3xl font-bold text-white mb-2">EVeM DNA Chat</h1>
+          <p className="text-slate-400">大事にしたい思想や経営方針について</p>
         </div>
         
         {/* Login Card */}

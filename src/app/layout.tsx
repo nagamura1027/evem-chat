@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'EVeM Chat - 社内AIアシスタント',
-  description: 'EVeM Japan社内向けAIチャットアプリケーション',
+  title: 'EVeM DNA Chat - 大事にしたい思想や経営方針について',
+  description: 'EVeM Japan - 大事にしたい思想や経営方針についてのAIチャット',
 };
 
 export default function RootLayout({
