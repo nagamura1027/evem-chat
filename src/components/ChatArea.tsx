@@ -266,14 +266,19 @@ export default function ChatArea({ thread, onThreadUpdate }: ChatAreaProps) {
                     <p className="font-medium text-white text-sm mb-1">
                       {message.role === 'assistant' ? 'EVeM DNA' : 'あなた'}
                     </p>
-                    <div className="text-[#ECECEC] text-sm whitespace-pre-wrap break-words leading-relaxed">
-                      {message.content || (message.isStreaming && (
-                        <span className="typing-cursor">▋</span>
-                      ))}
-                      {message.isStreaming && message.content && (
-                        <span className="typing-cursor">▋</span>
-                      )}
-                    </div>
+                    <div 
+                      className="text-[#ECECEC] text-sm whitespace-pre-wrap break-words leading-relaxed prose prose-invert prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{
+                        __html: message.content
+                          ? message.content
+                              .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-white">$1</strong>')
+                              .replace(/\n/g, '<br>')
+                          : ''
+                      }}
+                    />
+                    {message.isStreaming && (
+                      <span className="typing-cursor">▋</span>
+                    )}
                   </div>
                 </div>
               </div>
