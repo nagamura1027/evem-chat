@@ -19,16 +19,55 @@ export default function ChatArea({ thread, onThreadUpdate }: ChatAreaProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   
-  // Reset messages when thread changes
+  // Load message history when thread changes
   useEffect(() => {
     setMessages([]);
     setError(null);
-  }, [thread?.id]);
+    
+    if (thread?.id && thread?.dify_conversation_id) {
+      loadMessageHistory(thread.id);
+    }
+  }, [thread?.id, thread?.dify_conversation_id]);
+  
+  // Fetch message history from API
+  const loadMessageHistory = async (threadId: string) => {
+    setIsLoadingHistory(true);
+    try {
+      const response = await fetch(`/api/messages?thread_id=${threadId}`);
+      if (!response.ok) {
+        throw new Error('Failed to load messages');
+      }
+      const data = await response.json();
+      
+      // Transform Dify messages to our format
+      const loadedMessages: Message[] = [];
+      for (const msg of data.messages || []) {
+        // Add user message
+        loadedMessages.push({
+          id: `user-${msg.id}`,
+          role: 'user',
+          content: msg.query,
+        });
+        // Add assistant message
+        loadedMessages.push({
+          id: `assistant-${msg.id}`,
+          role: 'assistant',
+          content: msg.answer,
+        });
+      }
+      setMessages(loadedMessages);
+    } catch (err) {
+      console.error('Failed to load message history:', err);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
   
   // Auto scroll to bottom
   const scrollToBottom = useCallback(() => {
@@ -207,7 +246,14 @@ export default function ChatArea({ thread, onThreadUpdate }: ChatAreaProps) {
       
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
-        {messages.length === 0 ? (
+        {isLoadingHistory ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p className="text-slate-400 text-sm">履歴を読み込み中...</p>
+            </div>
+          </div>
+        ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center max-w-md">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-500/10 mb-4">
