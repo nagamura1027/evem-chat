@@ -58,15 +58,15 @@ function LoginContent() {
   const errorMessage = getErrorMessage(error);
   
   return (
-    <div className="min-h-screen bg-[#212121] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo and Title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center bg-white rounded-xl p-3 mb-6">
+          <div className="inline-flex items-center justify-center mb-6">
             <img
-              src="/logo.png"
+              src="/logo-white.png"
               alt="EVeM"
-              className="h-10 w-auto"
+              className="h-12 w-auto"
             />
           </div>
           <h1 className="text-2xl font-semibold text-white mb-2">EVeM DNA Chat</h1>
@@ -126,7 +126,7 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#212121] flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     }>
