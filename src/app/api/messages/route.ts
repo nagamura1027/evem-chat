@@ -83,6 +83,8 @@ export async function GET(request: NextRequest) {
     const difyData = await difyResponse.json();
     
     // Transform Dify messages to our format
+    // Dify API returns messages in descending order (newest first)
+    // We need ascending order (oldest first) for chat display
     const messages = (difyData.data || []).map((msg: {
       id: string;
       query: string;
@@ -93,7 +95,10 @@ export async function GET(request: NextRequest) {
       query: msg.query,
       answer: msg.answer,
       created_at: msg.created_at,
-    })).reverse(); // Reverse to get chronological order
+    }));
+    
+    // Sort by created_at ascending (oldest first, newest last)
+    messages.sort((a: { created_at: number }, b: { created_at: number }) => a.created_at - b.created_at);
     
     return new Response(
       JSON.stringify({ messages }),
