@@ -31,8 +31,8 @@ function LoginContent() {
       options: {
         redirectTo: `${siteUrl}/auth/callback`,
         queryParams: {
-          prompt: 'select_account', // 毎回アカウント選択画面を表示
-          hd: 'evem-japan.com', // evem-japan.comドメインのアカウントのみ表示
+          prompt: 'select_account',
+          hd: 'evem-japan.com',
         },
       },
     });
@@ -58,26 +58,26 @@ function LoginContent() {
   const errorMessage = getErrorMessage(error);
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#212121] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo and Title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center bg-white rounded-2xl p-4 mb-6 shadow-lg">
+          <div className="inline-flex items-center justify-center bg-white rounded-xl p-3 mb-6">
             <img
               src="/logo.png"
               alt="EVeM"
-              className="h-12 w-auto"
+              className="h-10 w-auto"
             />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">EVeM DNA Chat</h1>
-          <p className="text-slate-400">大事にしたい思想や経営方針について</p>
+          <h1 className="text-2xl font-semibold text-white mb-2">EVeM DNA Chat</h1>
+          <p className="text-[#9B9B9B] text-sm">大事にしたい思想や経営方針について</p>
         </div>
         
         {/* Login Card */}
-        <div className="glass rounded-2xl p-8">
+        <div className="bg-[#2F2F2F] rounded-xl p-6 border border-[#3A3A3A]">
           {/* Error Message */}
           {errorMessage && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
               <p className="text-red-400 text-sm text-center">{errorMessage}</p>
             </div>
           )}
@@ -85,7 +85,7 @@ function LoginContent() {
           {/* Google Login Button */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all duration-200"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -109,19 +109,14 @@ function LoginContent() {
           </button>
           
           {/* Domain Notice */}
-          <p className="mt-6 text-center text-sm text-slate-500">
-            <span className="inline-flex items-center gap-1">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              @evem-japan.com のメールアドレスが必要です
-            </span>
+          <p className="mt-4 text-center text-xs text-[#6B6B6B]">
+            @evem-japan.com のメールアドレスが必要です
           </p>
         </div>
         
         {/* Footer */}
-        <p className="mt-8 text-center text-xs text-slate-600">
-          © {new Date().getFullYear()} EVeM Japan. All rights reserved.
+        <p className="mt-6 text-center text-xs text-[#6B6B6B]">
+          © {new Date().getFullYear()} EVeM Japan
         </p>
       </div>
     </div>
@@ -131,7 +126,7 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-[#212121] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     }>
@@ -139,4 +134,3 @@ export default function LoginPage() {
     </Suspense>
   );
 }
-

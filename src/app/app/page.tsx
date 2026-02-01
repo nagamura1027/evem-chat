@@ -33,7 +33,6 @@ export default function AppPage() {
     }
   }, [router]);
   
-  // Check auth and load threads on mount
   useEffect(() => {
     const supabase = createClient();
     
@@ -45,7 +44,6 @@ export default function AppPage() {
         return;
       }
       
-      // Double-check email domain on client side
       if (!isAllowedEmail(user.email)) {
         await supabase.auth.signOut();
         router.push('/login?error=domain_not_allowed');
@@ -58,7 +56,6 @@ export default function AppPage() {
     
     checkAuth();
     
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
         router.push('/login');
@@ -74,9 +71,7 @@ export default function AppPage() {
     try {
       const response = await fetch('/api/thread', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: '新しいチャット' }),
       });
       
@@ -99,7 +94,6 @@ export default function AppPage() {
   };
   
   const handleThreadUpdate = () => {
-    // Reload threads to get updated conversation_id and title
     loadThreads();
   };
   
@@ -110,87 +104,123 @@ export default function AppPage() {
   };
   
   return (
-    <div className="h-screen flex flex-col">
-      {/* Top Bar */}
-      <header className="flex-shrink-0 h-14 px-4 flex items-center justify-between border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          {/* Mobile Menu Toggle */}
+    <div className="h-screen flex bg-[#212121]">
+      {/* Sidebar - Desktop */}
+      <aside className="hidden md:flex w-64 flex-col bg-[#171717]">
+        {/* Sidebar Header */}
+        <div className="p-3">
           <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+            onClick={handleNewThread}
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-white border border-[#3A3A3A] rounded-lg hover:bg-[#2F2F2F] transition-colors"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            新しいチャット
+          </button>
+        </div>
+        
+        {/* Thread List */}
+        <ThreadList
+          threads={threads}
+          selectedThreadId={selectedThread?.id || null}
+          onSelectThread={handleSelectThread}
+          onNewThread={handleNewThread}
+          isLoading={isLoadingThreads}
+        />
+        
+        {/* Sidebar Footer */}
+        <div className="p-3 border-t border-[#3A3A3A]">
+          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#2F2F2F] cursor-pointer" onClick={handleLogout}>
+            <div className="w-8 h-8 rounded-full bg-[#5436DA] flex items-center justify-center">
+              <span className="text-white text-sm font-medium">
+                {userEmail.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-white truncate">{userEmail.split('@')[0]}</p>
+              <p className="text-xs text-[#6B6B6B]">ログアウト</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+      
+      {/* Sidebar - Mobile */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-50">
+          <div 
+            className="absolute inset-0 bg-black/50" 
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <aside className="absolute left-0 top-0 bottom-0 w-64 flex flex-col bg-[#171717]">
+            <div className="flex items-center justify-between p-3 border-b border-[#3A3A3A]">
+              <button
+                onClick={handleNewThread}
+                className="flex-1 flex items-center gap-2 px-3 py-2 text-sm text-white border border-[#3A3A3A] rounded-lg hover:bg-[#2F2F2F]"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                新しいチャット
+              </button>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="ml-2 p-2 text-[#9B9B9B] hover:text-white"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <ThreadList
+              threads={threads}
+              selectedThreadId={selectedThread?.id || null}
+              onSelectThread={handleSelectThread}
+              onNewThread={handleNewThread}
+              isLoading={isLoadingThreads}
+            />
+            <div className="p-3 border-t border-[#3A3A3A]">
+              <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#2F2F2F] cursor-pointer" onClick={handleLogout}>
+                <div className="w-8 h-8 rounded-full bg-[#5436DA] flex items-center justify-center">
+                  <span className="text-white text-sm font-medium">
+                    {userEmail.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white truncate">{userEmail.split('@')[0]}</p>
+                  <p className="text-xs text-[#6B6B6B]">ログアウト</p>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Mobile Header */}
+        <header className="md:hidden flex items-center justify-between h-12 px-3 border-b border-[#3A3A3A] bg-[#212121]">
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2 text-[#9B9B9B] hover:text-white"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          
-          <div className="flex items-center gap-2">
-            <div className="h-8 bg-white rounded-lg px-2 flex items-center justify-center">
-              <img src="/logo.png" alt="EVeM" className="h-5 w-auto" />
-            </div>
-            <span className="font-semibold text-white hidden sm:inline">EVeM DNA Chat</span>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-slate-400 hidden sm:inline">{userEmail}</span>
+          <span className="text-sm font-medium text-white">EVeM DNA Chat</span>
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
+            onClick={handleNewThread}
+            className="p-2 text-[#9B9B9B] hover:text-white"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span className="hidden sm:inline">ログアウト</span>
           </button>
-        </div>
-      </header>
-      
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar - Desktop */}
-        <aside className="hidden md:flex w-72 flex-col border-r border-slate-700/50 bg-slate-800/30">
-          <ThreadList
-            threads={threads}
-            selectedThreadId={selectedThread?.id || null}
-            onSelectThread={handleSelectThread}
-            onNewThread={handleNewThread}
-            isLoading={isLoadingThreads}
-          />
-        </aside>
-        
-        {/* Sidebar - Mobile */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 z-50">
-            <div 
-              className="absolute inset-0 bg-black/50" 
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-            <aside className="absolute left-0 top-0 bottom-0 w-72 flex flex-col bg-slate-800 shadow-xl">
-              <div className="flex items-center justify-between p-4 border-b border-slate-700">
-                <span className="font-semibold text-white">チャット履歴</span>
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-1 text-slate-400 hover:text-white"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <ThreadList
-                threads={threads}
-                selectedThreadId={selectedThread?.id || null}
-                onSelectThread={handleSelectThread}
-                onNewThread={handleNewThread}
-                isLoading={isLoadingThreads}
-              />
-            </aside>
-          </div>
-        )}
+        </header>
         
         {/* Chat Area */}
-        <main className="flex-1 flex flex-col bg-slate-900/30">
+        <main className="flex-1 overflow-hidden">
           <ChatArea
             thread={selectedThread}
             onThreadUpdate={handleThreadUpdate}
@@ -200,4 +230,3 @@ export default function AppPage() {
     </div>
   );
 }
-
