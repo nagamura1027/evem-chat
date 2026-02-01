@@ -27,7 +27,7 @@ export async function GET(): Promise<NextResponse<ThreadsResponse | ApiError>> {
       .from('threads')
       .select('*')
       .eq('user_id', user.id)
-      .order('updated_at', { ascending: false });
+      .order('updated_at', { ascending: true });
     
     if (selectError) {
       console.error('Failed to fetch threads:', selectError);
