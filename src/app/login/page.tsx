@@ -66,7 +66,7 @@ function LoginContent() {
             <img
               src="/logo-white.png"
               alt="EVeM"
-              className="h-12 w-auto"
+              className="h-20 w-auto"
             />
           </div>
           <h1 className="text-2xl font-semibold text-white mb-2">EVeM DNA Chat</h1>
