@@ -15,6 +15,9 @@ interface ChatAreaProps {
   onThreadUpdate: () => void;
 }
 
+// Cache for message history
+const messageCache = new Map<string, Message[]>();
+
 export default function ChatArea({ thread, onThreadUpdate }: ChatAreaProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -27,11 +30,19 @@ export default function ChatArea({ thread, onThreadUpdate }: ChatAreaProps) {
   
   // Load message history when thread changes
   useEffect(() => {
-    setMessages([]);
     setError(null);
     
     if (thread?.id && thread?.dify_conversation_id) {
-      loadMessageHistory(thread.id);
+      // Check cache first
+      const cached = messageCache.get(thread.id);
+      if (cached) {
+        setMessages(cached);
+      } else {
+        setMessages([]);
+        loadMessageHistory(thread.id);
+      }
+    } else {
+      setMessages([]);
     }
   }, [thread?.id, thread?.dify_conversation_id]);
   
@@ -59,6 +70,8 @@ export default function ChatArea({ thread, onThreadUpdate }: ChatAreaProps) {
           content: msg.answer,
         });
       }
+      // Save to cache
+      messageCache.set(threadId, loadedMessages);
       setMessages(loadedMessages);
     } catch (err) {
       console.error('Failed to load message history:', err);
@@ -166,11 +179,14 @@ export default function ChatArea({ thread, onThreadUpdate }: ChatAreaProps) {
         }
       }
       
-      setMessages(prev =>
-        prev.map(msg =>
+      setMessages(prev => {
+        const updated = prev.map(msg =>
           msg.id === assistantMsgId ? { ...msg, isStreaming: false } : msg
-        )
-      );
+        );
+        // Update cache
+        if (thread?.id) messageCache.set(thread.id, updated);
+        return updated;
+      });
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
         setMessages(prev => prev.filter(msg => msg.id !== assistantMsgId));

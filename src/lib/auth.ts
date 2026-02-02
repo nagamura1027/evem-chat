@@ -15,3 +15,5 @@ export function getAllowedDomain(): string {
   return ALLOWED_EMAIL_DOMAIN;
 }
 
+
+
