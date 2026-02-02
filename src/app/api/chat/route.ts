@@ -56,11 +56,11 @@ export async function POST(request: NextRequest) {
     // Check if this is the first message (no conversation_id yet)
     const isFirstMessage = !thread.dify_conversation_id;
     
-    // Prepare Dify request (blocking mode for stability)
+    // Prepare Dify request
     const difyRequest: DifyChatRequest = {
       inputs: {},
       query: message,
-      response_mode: 'blocking',
+      response_mode: 'streaming',
       conversation_id: thread.dify_conversation_id || '',
       user: user.id,
       auto_generate_name: true,
@@ -85,43 +85,89 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const difyData = await difyResponse.json();
+    // Create SSE stream to client
+    const encoder = new TextEncoder();
     const serviceClient = createServiceRoleClient();
     
-    // Update thread with conversation_id
-    if (difyData.conversation_id) {
-      const updates: Record<string, unknown> = {
-        dify_conversation_id: difyData.conversation_id,
-        updated_at: new Date().toISOString(),
-      };
-      
-      if (isFirstMessage) {
-        updates.title = message.slice(0, 20);
-      }
-      
-      await serviceClient
-        .from('threads')
-        .update(updates)
-        .eq('id', thread_id);
-    }
-    
-    // Return response as SSE format for compatibility with frontend
-    const encoder = new TextEncoder();
     const stream = new ReadableStream({
-      start(controller) {
-        // Send message content
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-          event: 'message',
-          answer: difyData.answer || ''
-        })}\n\n`));
+      async start(controller) {
+        const reader = difyResponse.body?.getReader();
+        if (!reader) {
+          controller.close();
+          return;
+        }
         
-        // Send message_end
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-          event: 'message_end',
-          conversation_id: difyData.conversation_id
-        })}\n\n`));
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let conversationId: string | null = null;
         
-        controller.close();
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            
+            if (done) {
+              break;
+            }
+            
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+            
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const jsonStr = line.slice(6);
+                if (jsonStr.trim() === '') continue;
+                
+                try {
+                  const event: DifyMessageEvent = JSON.parse(jsonStr);
+                  
+                  if (event.event === 'ping') {
+                    continue;
+                  }
+                  
+                  if (event.event === 'message') {
+                    controller.enqueue(encoder.encode(`data: ${jsonStr}\n\n`));
+                  }
+                  
+                  if (event.event === 'message_end') {
+                    conversationId = event.conversation_id || null;
+                    controller.enqueue(encoder.encode(`data: ${jsonStr}\n\n`));
+                  }
+                  
+                  if (event.event === 'error') {
+                    controller.enqueue(encoder.encode(`data: ${jsonStr}\n\n`));
+                  }
+                } catch (parseError) {
+                  console.error('Failed to parse SSE data:', parseError);
+                }
+              }
+            }
+          }
+          
+          // After stream ends, update thread if needed
+          if (conversationId) {
+            const updates: Record<string, unknown> = {
+              dify_conversation_id: conversationId,
+              updated_at: new Date().toISOString(),
+            };
+            
+            if (isFirstMessage) {
+              updates.title = message.slice(0, 20);
+            }
+            
+            await serviceClient
+              .from('threads')
+              .update(updates)
+              .eq('id', thread_id);
+          }
+        } catch (error) {
+          console.error('Stream processing error:', error);
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ event: 'error', message: 'Stream processing error' })}\n\n`)
+          );
+        } finally {
+          controller.close();
+        }
       },
     });
     
@@ -140,6 +186,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-
-

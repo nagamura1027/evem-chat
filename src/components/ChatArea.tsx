@@ -152,19 +152,13 @@ export default function ChatArea({ thread, onThreadUpdate }: ChatAreaProps) {
               const event: DifyMessageEvent = JSON.parse(jsonStr);
               
               if (event.event === 'message' && event.answer) {
-                // Animate typing effect
-                const text = event.answer;
-                for (let i = 0; i < text.length; i++) {
-                  await new Promise(resolve => setTimeout(resolve, 15));
-                  const char = text[i];
-                  setMessages(prev => 
-                    prev.map(msg => 
-                      msg.id === assistantMsgId 
-                        ? { ...msg, content: msg.content + char }
-                        : msg
-                    )
-                  );
-                }
+                setMessages(prev => 
+                  prev.map(msg => 
+                    msg.id === assistantMsgId 
+                      ? { ...msg, content: msg.content + event.answer }
+                      : msg
+                  )
+                );
               }
               
               if (event.event === 'message_end') {
